@@ -59,25 +59,24 @@ void client(){
 		
 		char s[2] = "\n";
 		char host2[1024];
-		char *host;
+		
    		int i = 2;
+		char *provisoire;
 		/* decoupage des element dont on a besoin*/
-		host = strtok(buffer, s);
-		host = strtok(NULL, s);
-		printf( "avant \n");
-		strcpy(host2,host);
-		printf( "ici \n");
-		printf( " %s\n", host );
-    		char *hostname ;	
-		hostname = strtok(host2, ": ");
-		hostname = strtok(NULL, ": ");
-		
-		printf( " %s\n", hostname );
+		provisoire = strtok(buffer, s);
+		provisoire = strtok(NULL, s);
+		strcpy(host2,provisoire);
+		printf( "etape 1 \n");
+		char host[strlen(provisoire)];
+		strncpy(host, provisoire , strlen(provisoire)-1);
+		printf( "etape 2 \n");
+    		char * provisoire2;
+		provisoire2 = strtok(host2, ": ");
+		provisoire2 = strtok(NULL, ": ");
+		char hostname[strlen(provisoire2)];
+		strncpy(hostname, provisoire2 , strlen(provisoire2)-1);
 
-		
-		printf( " yes :%s\n", hostname );
-
-
+		printf( "etape 3 \n");
 
 			
 		SOCKET socketForServer = socket(AF_INET, SOCK_STREAM, 0);
@@ -94,7 +93,7 @@ void client(){
 
 		if (hostinfo == NULL) /* l'hôte n'existe pas */
 		{
-			fprintf (stderr, "Unknown host %s.\n", hostname);
+			fprintf (stderr, "Unknown host: %s\n", hostname);
 			exit(EXIT_FAILURE);
 		}
 
@@ -108,7 +107,6 @@ void client(){
 			exit(errno);
 		}
 		printf( "hello \n");
-		
 		printf( " %s\n", host );
 		char buff[2024];
 		sprintf(buff,"GET / HTTP/1.1\r\n%s\r\n\r\n",host);
@@ -119,7 +117,7 @@ void client(){
 			perror("send()");
 			exit(errno);
 		}
-		char bufferForSite[1024];
+		char bufferForSite[2000024];
 
 
 		if((n = read(socketForServer, bufferForSite, sizeof bufferForSite - 1)) < 0)
