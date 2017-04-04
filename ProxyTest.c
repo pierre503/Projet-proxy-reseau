@@ -24,7 +24,6 @@ typedef struct in_addr IN_ADDR;
 
 
 void client(){
-	printf("hello\n");
 	int n = 0;
 	int sockfd, newsockfd;
 	socklen_t clilen;
@@ -35,23 +34,19 @@ void client(){
 		error("ERROR opening socket");
 	}
 	bzero((char *) &serv_addr, sizeof(serv_addr));
-	printf("hello2\n");
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(PORTForClient);
-	printf("hello?\n");
 	if(bind(sockfd,(SOCKADDR *) &serv_addr,sizeof(serv_addr)) == SOCKET_ERROR)
    	{
       		perror("bind()");
       		exit(errno);
    	}
-	printf("hello3\n");
 	listen(sockfd,MAXClient);
 	while(1){
 		clilen = sizeof(cli_addr);
 		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-		printf("hello4\n");
 		if (newsockfd < 0) 
 			error("ERROR on accept");
 	
@@ -60,7 +55,31 @@ void client(){
 		
 		if (n < 0) error("ERROR reading from socket");
 	
-		printf("Here is the message: %s\n",buffer);	
+		printf("Here is the message: %s\n",buffer);
+		
+		char s[2] = "\n";
+		char host2[1024];
+		char *host;
+   		int i = 2;
+		/* decoupage des element dont on a besoin*/
+		host = strtok(buffer, s);
+		host = strtok(NULL, s);
+		printf( "avant \n");
+		strcpy(host2,host);
+		printf( "ici \n");
+		printf( " %s\n", host );
+    		char *hostname ;	
+		hostname = strtok(host2, ": ");
+		hostname = strtok(NULL, ": ");
+		
+		printf( " %s\n", hostname );
+
+		
+		printf( " yes :%s\n", hostname );
+
+
+
+			
 		SOCKET socketForServer = socket(AF_INET, SOCK_STREAM, 0);
 	
 		if(socketForServer == INVALID_SOCKET)
@@ -71,7 +90,6 @@ void client(){
 
 		struct hostent *hostinfo = NULL;
 		SOCKADDR_IN sin = { 0 }; /* initialise la structure avec des 0 */
-		const char *hostname = "www.perdu.com";	
 		hostinfo = gethostbyname(hostname); /* on récupère les informations de l'hôte auquel on veut se connecter */
 
 		if (hostinfo == NULL) /* l'hôte n'existe pas */
@@ -83,14 +101,19 @@ void client(){
 		sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr; /* l'adresse se trouve dans le champ h_addr de la structure hostinfo */
 		sin.sin_port = htons(PORTForServer); /* on utilise htons pour le port */
 		sin.sin_family = AF_INET;
-
+		printf( "aie\n");
 		if(connect(socketForServer,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
 		{
 			perror("connect()");
 			exit(errno);
 		}
-
-		char * buff = "GET / HTTP/1.1\r\nHost: www.perdu.com\r\n\r\n";
+		printf( "hello \n");
+		
+		printf( " %s\n", host );
+		char buff[2024];
+		sprintf(buff,"GET / HTTP/1.1\r\n%s\r\n\r\n",host);
+		printf( " %s\n",buff);
+		printf( "bye \n");
 		if(write(socketForServer, buff, strlen(buff)) < 0)
 		{
 			perror("send()");
