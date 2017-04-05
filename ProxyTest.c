@@ -51,7 +51,7 @@ void client(){
 			error("ERROR on accept");
 	
 		bzero(buffer,1024);
-		n = read(newsockfd,buffer,1024);
+		n = recv(newsockfd,buffer,1024,0);
 		
 		if (n < 0) error("ERROR reading from socket");
 	
@@ -66,17 +66,14 @@ void client(){
 		provisoire = strtok(buffer, s);
 		provisoire = strtok(NULL, s);
 		strcpy(host2,provisoire);
-		printf( "etape 1 \n");
 		char host[strlen(provisoire)];
 		strncpy(host, provisoire , strlen(provisoire)-1);
-		printf( "etape 2 \n");
     		char * provisoire2;
 		provisoire2 = strtok(host2, ": ");
 		provisoire2 = strtok(NULL, ": ");
 		char hostname[strlen(provisoire2)];
 		strncpy(hostname, provisoire2 , strlen(provisoire2)-1);
 
-		printf( "etape 3 \n");
 
 			
 		SOCKET socketForServer = socket(AF_INET, SOCK_STREAM, 0);
@@ -100,38 +97,31 @@ void client(){
 		sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr; /* l'adresse se trouve dans le champ h_addr de la structure hostinfo */
 		sin.sin_port = htons(PORTForServer); /* on utilise htons pour le port */
 		sin.sin_family = AF_INET;
-		printf( "aie\n");
 		if(connect(socketForServer,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
 		{
 			perror("connect()");
 			exit(errno);
 		}
-		printf( "hello \n");
 		printf( " %s\n", host );
-		char buff[2024];
+		char buff[510];
 		sprintf(buff,"GET / HTTP/1.1\r\n%s\r\n\r\n",host);
 		printf( " %s\n",buff);
-		printf( "bye \n");
-		if(write(socketForServer, buff, strlen(buff)) < 0)
+		if(send(socketForServer, buff, strlen(buff),0) < 0)
 		{
 			perror("send()");
 			exit(errno);
-		}
-		char bufferForSite[2000024];
-
-
-		if((n = read(socketForServer, bufferForSite, sizeof bufferForSite - 1)) < 0)
+		}else{
+		do
 		{
-			perror("recv()");
-			exit(errno);
+			bzero((char*)buff,500);
+			n=recv(socketForServer,buff,500,0);
+			if(!(n<=0))
+				send(newsockfd,buff,n,0);
+			
+		}while(n>0);
 		}
 
-		bufferForSite[n] = '\0';
-		n = write(newsockfd,bufferForSite,sizeof(bufferForSite));
-
-		if (n < 0) error("ERROR writing to socket");
-	
-		printf("%s\n",bufferForSite);
+		printf("%s\n",buff);
 	
 		closesocket(socketForServer);
 		close(newsockfd);
