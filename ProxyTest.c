@@ -103,24 +103,28 @@ void client(){
 			exit(errno);
 		}
 		printf( " %s\n", host );
-		char buff[510];
+		char buff[2000];
 		sprintf(buff,"GET / HTTP/1.1\r\n%s\r\n\r\n",host);
 		printf( " %s\n",buff);
-		if(send(socketForServer, buff, strlen(buff),0) < 0)
+		if(send(socketForServer, buff, sizeof(buff),0) < 0)
 		{
 			perror("send()");
 			exit(errno);
 		}else{
-		do
-		{
-			bzero((char*)buff,500);
-			n=recv(socketForServer,buff,500,0);
+			while(n=recv(socketForServer,buff,2000,0)>0){
+				printf("passe\n");
+				if(!(n<=0))
+					printf("%d\n",n);
+					printf("erreur\n");
+					write(newsockfd,buff,sizeof(buff));
+					printf("pas erreur\n");
+			}
+			printf("stop\n");
 			if(!(n<=0))
-				send(newsockfd,buff,n,0);
+				write(newsockfd,buff,n);
 			
-		}while(n>0);
 		}
-
+		printf("fin\n");
 		printf("%s\n",buff);
 	
 		closesocket(socketForServer);
